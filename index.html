@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Street Sign Transliterator - SIH 2025</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Street Sign Transliterator</h1>
+            <p>Download only what you need - Save data & storage</p>
+            <button id="darkModeToggle" class="dark-mode-toggle">
+                <span class="toggle-icon">🌙</span>
+            </button>
+        </header>
+
+        <div class="mode-selection">
+            <label class="mode-switch">
+                <input type="radio" name="mode" value="online" checked>
+                <span>🌐 Online Mode</span>
+            </label>
+            <label class="mode-switch">
+                <input type="radio" name="mode" value="offline">
+                <span>📱 Offline Mode</span>
+            </label>
+            <label class="mode-switch">
+                <input type="radio" name="mode" value="hybrid">
+                <span>⚡ Hybrid Mode</span>
+            </label>
+        </div>
+
+        <div class="api-status" id="apiStatus">
+            <span class="status-indicator" id="statusIndicator"></span>
+            <span id="statusText">Loading...</span>
+        </div>
+
+        <div class="package-manager" id="packageManager" style="display: none;">
+            <h3>📦 Language Package Manager</h3>
+            <div class="storage-info">
+                <span>Storage Used: <strong id="storageUsed">0 MB</strong></span>
+                <span>Available: <strong id="storageAvailable">0 MB</strong></span>
+            </div>
+            <div class="package-grid" id="packageGrid"></div>
+        </div>
+
+        <div class="active-packages" id="activePackages">
+            <h4>✅ Active Packages</h4>
+            <div id="activeList">
+                <p class="no-packages">No packages installed</p>
+            </div>
+        </div>
+
+        <main>
+            <div class="upload-section">
+                <div class="upload-options">
+                    <button id="cameraBtn" class="btn btn-primary">
+                        <span class="icon">📷</span> Capture Photo
+                    </button>
+                    <button id="uploadBtn" class="btn btn-secondary">
+                        <span class="icon">📁</span> Upload Photo
+                    </button>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                </div>
+
+                <div id="cameraContainer" class="camera-container" style="display: none;">
+                    <video id="video" autoplay></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <div class="camera-controls">
+                        <button id="captureBtn" class="btn btn-capture">Capture</button>
+                        <button id="closeCameraBtn" class="btn btn-close">Close</button>
+                    </div>
+                </div>
+
+                <div id="imagePreview" class="image-preview" style="display: none;">
+                    <img id="previewImage" alt="Preview">
+                    <button id="removeImageBtn" class="btn btn-remove">Remove</button>
+                </div>
+            </div>
+
+            <div class="processing-section">
+                <button id="processBtn" class="btn btn-process" disabled>
+                    <span class="icon">🔄</span> Process Image
+                </button>
+                <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                    <div class="spinner"></div>
+                    <p id="loadingText">Processing...</p>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <div class="result-card">
+                    <h3>Original Text (OCR)</h3>
+                    <div id="extractedText" class="text-output">
+                        <p class="placeholder">Text will appear here after processing</p>
+                    </div>
+                    <div class="confidence-score" id="confidenceScore" style="display: none;">
+                        Confidence: <span id="confidenceValue">0%</span>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>Transliterated Text</h3>
+                    <div id="transliteratedText" class="text-output">
+                        <p class="placeholder">Transliteration will appear here</p>
+                    </div>
+                </div>
+
+                <div class="language-options">
+                    <label for="sourceLanguage">Source Language:</label>
+                    <select id="sourceLanguage">
+                        <option value="auto">Auto-Detect</option>
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="ta">Tamil</option>
+                        <option value="te">Telugu</option>
+                        <option value="kn">Kannada</option>
+                        <option value="ml">Malayalam</option>
+                        <option value="bn">Bengali</option>
+                        <option value="gu">Gujarati</option>
+                        <option value="pa">Punjabi</option>
+                        <option value="or">Odia</option>
+                    </select>
+
+                    <label for="targetLanguage">Target Script:</label>
+                    <select id="targetLanguage">
+                        <option value="en">English (Latin)</option>
+                        <option value="hi">Hindi (Devanagari)</option>
+                        <option value="ta">Tamil</option>
+                        <option value="te">Telugu</option>
+                        <option value="kn">Kannada</option>
+                        <option value="ml">Malayalam</option>
+                        <option value="bn">Bengali</option>
+                        <option value="gu">Gujarati</option>
+                        <option value="pa">Punjabi (Gurmukhi)</option>
+                        <option value="or">Odia</option>
+                    </select>
+                </div>
+
+                <div class="api-config">
+                    <h4>API Configuration</h4>
+                    <div class="config-input">
+                        <label for="ocrApiKey">OCR.Space API Key:</label>
+                        <input type="password" id="ocrApiKey" placeholder="Enter OCR.Space API key">
+                    </div>
+                    <button id="saveApiKeys" class="btn btn-secondary">Save API Keys</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="modules/pack-manager.js"></script>
+    <script src="modules/ocr-engine.js"></script>
+    <script src="modules/translit-engine.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
